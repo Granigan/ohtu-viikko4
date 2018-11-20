@@ -115,5 +115,20 @@ public class KauppaTest {
         
     }
     
+    @Test
+    public void koristaPoistoVahentaaHinnanSummasta() {
+        when(varasto.saldo(1)).thenReturn(5);
+        when(varasto.haeTuote(1)).thenReturn(new Tuote(1, "maito", 77));
+        when(varasto.saldo(2)).thenReturn(5);
+        when(varasto.haeTuote(2)).thenReturn(new Tuote(2, "piimä", 33));
+        
+        kauppa.aloitaAsiointi();
+        kauppa.lisaaKoriin(2);
+        kauppa.lisaaKoriin(1);
+        kauppa.poistaKorista(2);
+        kauppa.tilimaksu("luke", "54321");
+        
+        verify(pankki).tilisiirto(eq("luke"), anyInt(), eq("54321"), anyString(), eq(77));        
+    }
     
 }

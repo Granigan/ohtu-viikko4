@@ -76,4 +76,44 @@ public class KauppaTest {
         verify(pankki).tilisiirto(eq("matti"), anyInt(), eq("12345"), anyString(), eq(77));
     }
 
+    @Test
+    public void uusiAsiointiTyhjentääVanhatTiedot() {
+        when(varasto.saldo(1)).thenReturn(5);
+        when(varasto.haeTuote(1)).thenReturn(new Tuote(1, "maito", 77));
+        when(varasto.saldo(2)).thenReturn(5);
+        when(varasto.haeTuote(2)).thenReturn(new Tuote(2, "piimä", 33));
+        
+        kauppa.aloitaAsiointi();
+        kauppa.lisaaKoriin(1);
+        kauppa.tilimaksu("matti", "12345");
+        
+        kauppa.aloitaAsiointi();
+        kauppa.lisaaKoriin(2);
+        kauppa.tilimaksu("luke", "54321");
+        
+        verify(pankki).tilisiirto(eq("luke"), anyInt(), eq("54321"), anyString(), eq(33));
+        
+    }
+    
+    @Test
+    public void jokainenAsiointiPyytaaUudenViitteen() {
+        when(varasto.saldo(1)).thenReturn(5);
+        when(varasto.haeTuote(1)).thenReturn(new Tuote(1, "maito", 77));
+        
+        
+        kauppa.aloitaAsiointi();
+        kauppa.lisaaKoriin(1);
+        kauppa.tilimaksu("matti", "12345");
+        
+        verify(vige, times(1)).uusi();
+        
+        kauppa.aloitaAsiointi();
+        kauppa.lisaaKoriin(1);
+        kauppa.tilimaksu("luke", "54321");
+        
+        verify(vige, times(2)).uusi();
+        
+    }
+    
+    
 }
